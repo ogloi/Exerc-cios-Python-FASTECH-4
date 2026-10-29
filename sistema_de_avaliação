@@ -1,0 +1,142 @@
+ARQUIVO = "avaliacoes.txt"
+
+OPCOES_AVALIACAO = {
+    "1": "Ótimo",
+    "2": "Bom",
+    "3": "Regular",
+    "4": "Péssimo",
+}
+
+def ler_avaliacoes():
+    """
+    Lê o arquivo e devolve uma lista de tuplas (idade, avaliacao).
+    Se o arquivo não existir, devolve uma lista vazia (sem erro).
+    Linhas em branco ou mal formatadas são ignoradas.
+    """
+    registros = []
+    try:
+        with open(ARQUIVO, "r", encoding="utf-8") as arquivo:
+            for linha in arquivo:
+                linha = linha.strip()
+                if linha == "":
+                    continue
+
+                partes = linha.split(";")
+                if len(partes) != 2:
+                    continue
+
+                idade_texto = partes[0].strip()
+                avaliacao = partes[1].strip()
+
+                if idade_texto.isdigit():
+                    registros.append((int(idade_texto), avaliacao))
+    except FileNotFoundError:
+        pass
+    return registros
+
+
+def gravar_avaliacao(idade, avaliacao):
+    with open(ARQUIVO, "a", encoding="utf-8") as arquivo:
+        arquivo.write(f"{idade};{avaliacao}\n")
+
+
+def pedir_idade():
+    """Pede a idade até o usuário digitar um número inteiro válido."""
+    while True:
+        texto = input("Idade do cliente: ").strip()
+        try:
+            idade = int(texto)
+        except ValueError:
+            print("Idade inválida! Digite apenas números inteiros.")
+            continue
+
+        if idade < 0 or idade > 120:
+            print("Idade inválida! Digite um valor entre 0 e 120.")
+            continue
+
+        return idade
+
+
+def pedir_avaliacao():
+    print("Avaliação do atendimento:")
+    for numero, nome in OPCOES_AVALIACAO.items():
+        print(f"  {numero}. {nome}")
+
+    while True:
+        escolha = input("Escolha a avaliação (1-4): ").strip()
+        if escolha in OPCOES_AVALIACAO:
+            return OPCOES_AVALIACAO[escolha]
+        print("Opção inválida! Digite um número de 1 a 4.")
+
+def cadastrar_avaliacao():
+    print("\n===== CADASTRAR AVALIAÇÃO =====")
+    idade = pedir_idade()
+    avaliacao = pedir_avaliacao()
+    gravar_avaliacao(idade, avaliacao)
+    print("Avaliação cadastrada com sucesso!")
+
+
+def listar_avaliacoes():
+    registros = ler_avaliacoes()
+
+    print("\n===== AVALIAÇÕES CADASTRADAS =====")
+    if len(registros) == 0:
+        print("Nenhuma avaliação cadastrada até o momento.")
+        return
+
+    for numero, (idade, avaliacao) in enumerate(registros, start=1):
+        print(f"Cliente {numero} - Idade: {idade} - Avaliação: {avaliacao}")
+
+
+def consultar_estatisticas():
+    registros = ler_avaliacoes()
+
+    print("\n===== ESTATÍSTICAS DAS AVALIAÇÕES =====")
+    if len(registros) == 0:
+        print("Nenhuma avaliação cadastrada até o momento.")
+        return
+
+    contagem = {nome: 0 for nome in OPCOES_AVALIACAO.values()}
+    for _, avaliacao in registros:
+        if avaliacao in contagem:
+            contagem[avaliacao] += 1
+
+    mais_velho = max(registros, key=lambda registro: registro[0])
+    mais_novo = min(registros, key=lambda registro: registro[0])
+
+    print(f"Total de respondentes: {len(registros)}")
+    for nome, quantidade in contagem.items():
+        print(f"{nome}: {quantidade}")
+
+    print("Respondente mais velho:")
+    print(f"Idade: {mais_velho[0]} anos")
+    print(f"Avaliação: {mais_velho[1]}")
+
+    print("Respondente mais novo:")
+    print(f"Idade: {mais_novo[0]} anos")
+    print(f"Avaliação: {mais_novo[1]}")
+
+def main():
+    while True:
+        print("\n===== SISTEMA DE AVALIAÇÃO DO CINEMA =====")
+        print("1. Cadastrar avaliação")
+        print("2. Listar avaliações")
+        print("3. Consultar estatísticas")
+        print("4. Sair")
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            cadastrar_avaliacao()
+        elif opcao == "2":
+            listar_avaliacoes()
+        elif opcao == "3":
+            consultar_estatisticas()
+        elif opcao == "4":
+            print("Encerrando o programa. As avaliações foram mantidas no arquivo.")
+            break
+        else:
+            print("Opção inválida! Escolha um número de 1 a 4.")
+
+
+if __name__ == "__main__":
+    main()
